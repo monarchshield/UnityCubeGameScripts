@@ -110,42 +110,6 @@ public class PlayerMove : MonoBehaviour
     }
 
 
-    /* Depreciated */
-    #region DepreciatedRayCastAngleAccurate
-    public bool isRayCastAngleAccurate(float angle)
-    {
-        bool Raycastaccurate;
-
-        switch (angle)
-        {
-            case float i when i > -5 && i < 5:
-                Raycastaccurate = true;
-                break;
-
-            case float i when i > 35 && i < 55:
-                Raycastaccurate = true;
-                break;
-
-            case float i when i > 85 && i < 95:
-                Raycastaccurate = true;
-                break;
-
-            case float i when i > 125 && i < 140:
-                Raycastaccurate = true;
-                break;
-
-            case float i when i > 170 && i < 190:
-                Raycastaccurate = true;
-                break;
-
-            default:
-                Raycastaccurate = false;
-                break;
-        }
-
-        return Raycastaccurate;
-    }
-    #endregion
 
     public bool isRayCastAngleRecursive(float angle)
     {
@@ -160,69 +124,6 @@ public class PlayerMove : MonoBehaviour
 
     }
 
-
-    /*Depreciated */
-    #region DepreciatedAwfulGridChicks
-    //Checks to see whether all the objects are on the same y axis or not
-    private bool VerticalityCheck(PlayerMove p1, PlayerMove p2)
-    {
-        bool VerticalityCheck = false;
-
-        /*This is a 2d grid reference [X,X,X
-                                       X,X,X
-                                       X,X,X]
-
-        */
-        if(m_layernumber.Equals(p1.m_layernumber) && p1.m_layernumber.Equals(p2.m_layernumber))
-        {
-            VerticalityCheck = true;
-        }
-
-        
-        if(!m_layernumber.Equals(p1.m_layernumber) && !p1.m_layernumber.Equals(p2.m_layernumber))
-        {
-            VerticalityCheck = GridCheck(p1,p2);
-        }
-
-
-        return VerticalityCheck;
-    }
-
-    //This is an outlier, to see if the objects  are either all on the same x,z axis or there not
-    //Replace with magic square.
-    private bool GridCheck(PlayerMove p1, PlayerMove p2)
-    {
-
-        //Check that the object are either both on the same row and tile
-        if(transform.position.x.Equals(p1.transform.position.x) && p1.transform.position.x.Equals(p2.transform.position.x) && p2.transform.position.x.Equals(transform.position.x) &&
-           transform.position.z.Equals(p1.transform.position.z) && p1.transform.position.z.Equals(p2.transform.position.z) && p2.transform.position.z.Equals(transform.position.z) )
-        {
-            return true;
-        }
-
-
-        //Or Only Only on the same row in one axis
-        if (!transform.position.x.Equals(p1.transform.position.x) && !p1.transform.position.x.Equals(p2.transform.position.x) && !p2.transform.position.x.Equals(transform.position.x)
-          && transform.position.z.Equals(p1.transform.position.z) && p1.transform.position.z.Equals(p2.transform.position.z) && p2.transform.position.z.Equals(transform.position.z) ||
-
-          transform.position.x.Equals(p1.transform.position.x) && p1.transform.position.x.Equals(p2.transform.position.x) && p2.transform.position.x.Equals(transform.position.x)
-          && !transform.position.z.Equals(p1.transform.position.z) && !p1.transform.position.z.Equals(p2.transform.position.z) && !p2.transform.position.z.Equals(transform.position.z))
-        {
-            return true;
-        }
-
-
-        //Or not on any of the same row in any axis!
-        if (!transform.position.x.Equals(p1.transform.position.x) && !p1.transform.position.x.Equals(p2.transform.position.x) && !p2.transform.position.x.Equals(transform.position.x) &&
-          !transform.position.z.Equals(p1.transform.position.z) && !p1.transform.position.z.Equals(p2.transform.position.z) && !p2.transform.position.z.Equals(transform.position.z))
-        {
-            return true;
-        }
-
-        return false;
-
-    }
-    #endregion
 
     public bool GridCheckMagicNumber(PlayerMove p0, PlayerMove p1, PlayerMove p2)
     {
