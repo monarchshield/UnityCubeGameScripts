@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using CameraShake;
 
 public class PlayerMove : MonoBehaviour
 {
@@ -9,7 +10,8 @@ public class PlayerMove : MonoBehaviour
     private GameManager m_gamemanager; //This is to get a reference to the player turn
     private Rigidbody m_rigidbody; //This is to enable and disable physics on this object
     private bool m_traversed; //This is to see if this node has already been scored
-    
+    private bool m_alreadyscored; //This is set to false;
+
     public int m_layernumber; //This is used for the verticallity
     public int m_magicnumbervalue; //This is the magic number value;
 
@@ -22,6 +24,7 @@ public class PlayerMove : MonoBehaviour
         m_gamemanager = GameObject.Find("GameManager").GetComponent<GameManager>();
         m_rigidbody = GetComponent<Rigidbody>();
         m_traversed = false;
+        m_alreadyscored = false;
       
         m_playermoves = GameObject.FindGameObjectsWithTag(gameObject.tag); //Return all other moves
 
@@ -29,8 +32,7 @@ public class PlayerMove : MonoBehaviour
         {
             playermove.GetComponent<PlayerMove>().SetTraversed(false);
         }
-
-
+        CameraShaker.Presets.ShortShake2D();
     }
 
     
@@ -45,11 +47,15 @@ public class PlayerMove : MonoBehaviour
     private void OnCollisionEnter(Collision collision)
     {
         m_rigidbody.constraints = RigidbodyConstraints.FreezeAll;
-        m_rigidbody.isKinematic = true;
+        m_rigidbody.isKinematic = false;
         m_layernumber = (int)Mathf.Floor(transform.position.y);
+       
+        if(!m_alreadyscored)
+        {
+            RayCastCheckPoints();
+            m_alreadyscored = true;
+        }
         
-
-        RayCastCheckPoints();
     }
 
     private void RayCastCheckPoints()
@@ -61,13 +67,10 @@ public class PlayerMove : MonoBehaviour
          * 4) Make sure the blocks cant be retraversed or double points may occur
          * 5) Update Game score for player moves
          */
-        int i = 0;
-        Color testing = Color.red;
+        
         foreach (GameObject playermove in m_playermoves)
         {
-            if (i == 1) { testing = Color.blue; }
-            if (i == 2) { testing = Color.green; }
-
+          
 
 
 
@@ -75,8 +78,6 @@ public class PlayerMove : MonoBehaviour
             float Angle = Vector3.Angle(Direction, transform.forward);
             Direction.Normalize();
 
-            Debug.DrawRay(playermove.transform.position, Direction * 50, testing, 10f);
-            i++;
             RaycastHit[] hits;
             hits = Physics.RaycastAll(playermove.transform.position, Direction * 50, 50,9);
 
@@ -90,16 +91,24 @@ public class PlayerMove : MonoBehaviour
                     hits[1].transform.tag.Equals(transform.tag) && !playerobj2.Traversed())
                 {
 
-                    Debug.Log("Raycast Angle:" + Angle);
-                    if (isRayCastAngleRecursive(Angle) && GridCheckMagicNumber(loopcomponent, playerobj1,playerobj2))
+                 
+                    if (isRayCastAngleRecursive(Angle) && GridCheckMagicNumber(loopcomponent, playerobj1,playerobj2) && VerticalityCheck(loopcomponent, playerobj1, playerobj2))
                     {
+
+                       
 
                         loopcomponent.SetTraversed(true);
                         playerobj1.SetTraversed(true);
                         playerobj2.SetTraversed(true);
                         
-                        if (transform.tag == "Player1Move") { m_gamemanager.IncrimentPlayerOneScore(); Debug.DrawRay(transform.position, Direction * 30, Color.red , 600f); }
-                        else { m_gamemanager.IncrimentPlayerTwoScore(); Debug.DrawRay(transform.position, Direction * 30, Color.blue, 600f); }
+                        if (transform.tag == "Player1Move") { m_gamemanager.IncrimentPlayerOneScore(); Debug.DrawRay(playermove.transform.position, Direction * 50, Color.red , 600f); }
+                        else { m_gamemanager.IncrimentPlayerTwoScore(); Debug.DrawRay(playermove.transform.position, Direction * 50, Color.blue, 600f); }
+
+                        hits[0].transform.gameObject.GetComponent<Animator>().SetTrigger("PointScored");
+                        hits[1].transform.gameObject.GetComponent<Animator>().SetTrigger("PointScored");
+                        playermove.GetComponent<Animator>().SetTrigger("PointScored");
+
+                        CameraShaker.Presets.Explosion3D();
 
                     }
                 }
@@ -110,24 +119,26 @@ public class PlayerMove : MonoBehaviour
     }
 
 
-
+    //Check to see if the raycast is a straight line equal to or a multiple of 45 degrees
     public bool isRayCastAngleRecursive(float angle)
     {
         while(angle > 10)
             angle = angle - 45;
 
 
-        if (angle < 10 || angle > -10) { return true; }
+        if (angle < 5 || angle > -5) { Debug.Log(angle);  return true; }
        
 
+        
         return false;
 
     }
 
 
+    //Calculate the score if the raycast adds up to 15 a point is awarded
     public bool GridCheckMagicNumber(PlayerMove p0, PlayerMove p1, PlayerMove p2)
     {
-        Debug.Log("Magic Number Values:" + p0.GetMagicNumber().ToString() + "," + p1.GetMagicNumber().ToString() + "," + p2.GetMagicNumber().ToString());
+        //Debug.Log("Magic Number Values:" + p0.GetMagicNumber().ToString() + "," + p1.GetMagicNumber().ToString() + "," + p2.GetMagicNumber().ToString());
 
         if(p0.GetMagicNumber() + p1.GetMagicNumber() + p2.GetMagicNumber() == 15 || 
            p0.GetMagicNumber().Equals(p1.GetMagicNumber()) && p1.GetMagicNumber().Equals(p2.GetMagicNumber()))
@@ -138,7 +149,20 @@ public class PlayerMove : MonoBehaviour
         return false;
     }
 
+    //Check to see that all the blocks are either in the same layer or different layers. (Layer refers to the Y Axis) 
+    public bool VerticalityCheck(PlayerMove p0, PlayerMove p1, PlayerMove p2)
+    {
+       if(p0.GetLayNumber().Equals(p1.GetLayNumber()) && p1.GetLayNumber().Equals(p2.GetLayNumber())
+          || !p0.GetLayNumber().Equals(p1.GetLayNumber()) && !p1.GetLayNumber().Equals(p2.GetLayNumber()))
+       {
+            return true;
+       }
 
+
+        return false;
+    }
+
+    public int GetLayNumber() { return m_layernumber; }
 
     public void SetMagicNumberValue(int val) { m_magicnumbervalue = val; }
     public int GetMagicNumber() { return m_magicnumbervalue; }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,7 +10,10 @@ public class GameManager : MonoBehaviour
     //The canvas object itself
     public GameObject CanvasObject;
     public GameObject UIObject;
-    
+    public Text m_Player1Text;
+    public Text m_Player2Text;
+
+
     private int m_playerTurn; //Player 1 or Player 2
 
     //Player ones score
@@ -69,14 +73,19 @@ public class GameManager : MonoBehaviour
 
 
 
+
     void Start()
     {
+       
+
         targetRotationCanvas = CanvasObject.transform.rotation.eulerAngles;
         TargetRotationUI = UIObject.transform.rotation.eulerAngles;
 
         isRotating = false;
-       
+
     }
+
+
 
     // Update is called once per frame
 
@@ -99,9 +108,48 @@ public class GameManager : MonoBehaviour
     }
 
     public int GetPlayerTurn() { return m_playerTurn; }
-    public void SetPlayerTurn(int playernum) { m_playerTurn = playernum; }
+    public void SetPlayerTurn(int playernum) 
+    { 
+        m_playerTurn = playernum; 
+        if(m_playerTurn.Equals(1))
+        {
+            Image[] ImageArray = UIObject.GetComponentsInChildren<Image>();
 
-    public void IncrimentPlayerOneScore() { m_playeronescore += 1; Debug.Log("Wooohoo! Point awarded for player 1");  }
-    public void IncrimentPlayerTwoScore() { m_playertwoscore += 1; Debug.Log("Wooohoo! Point awarded for player 2"); }
+            foreach(Image img in ImageArray)
+            {
+                Color32 lime32 = new Color32(255, 151, 0, 255);
+                img.color = lime32;
+                
+            }
+
+          
+        }
+
+        else 
+        {
+
+            Image[] ImageArray = UIObject.GetComponentsInChildren<Image>();
+
+            foreach (Image img in ImageArray)
+            {
+                Color32 oj32 = new Color32(12, 255, 135, 255);
+                img.color = oj32;
+
+                
+            }
+            
+        }
+    }
+
+    public void IncrimentPlayerOneScore() 
+    { 
+        m_playeronescore += 1; Debug.Log("Wooohoo! Point awarded for player 1");
+        m_Player1Text.text = m_playeronescore.ToString();
+    }
+    public void IncrimentPlayerTwoScore() 
+    {
+        m_playertwoscore += 1; Debug.Log("Wooohoo! Point awarded for player 2");
+        m_Player2Text.text = m_playertwoscore.ToString();
+    }
 
 }
